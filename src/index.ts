@@ -1,14 +1,19 @@
 import { App } from "./App";
 import {
+  BOT_API_TOKEN,
+  BOT_TARGET_ID,
   GITHUB_WEBHOOK_SECRET_TOKEN,
   PORT
 } from "./env";
 
-const server = new App({
+const config = {
   port: +PORT,
-  gh_secret_token: GITHUB_WEBHOOK_SECRET_TOKEN
-})
+  gh_secret_token: GITHUB_WEBHOOK_SECRET_TOKEN,
+  bot_api_token: BOT_API_TOKEN,
+  bot_target_id: BOT_TARGET_ID
+}
 
+const server = new App(config)
 server.run();
 
 /**
@@ -17,5 +22,3 @@ server.run();
  */
 process.on("SIGINT", () => server.stop());
 process.on("SIGTERM", () => server.stop());
-process.on("SIGUSR1", () => server.stop());
-process.on("SIGUSR2", () => server.stop());

@@ -3,17 +3,29 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 import { Event } from "./Event";
 import { IRouteProvider } from "../../interfaces";
-import { Telegram } from "../../services/Telegram";
+import { Throttle as Transmitter } from "../../services/Throttle";
+import { MessageHandler } from "../../utils/message";
 
 export class Webhook implements IRouteProvider {
+  private static instance: Webhook;
+
+  private readonly _headers = { "Content-Type": "application/json" }
   private readonly _http: Polka;
   private readonly _route: string = "github";
   private readonly _secret_token: string;
-  private readonly _headers = { "Content-Type": "application/json" }
+  private readonly _transmitter: Transmitter;
 
-  constructor(http: Polka, secret: string) {
+  private constructor(http: Polka, secret: string, transmitter: Transmitter) {
     this._http = http;
     this._secret_token = secret;
+    this._transmitter = transmitter;
+  }
+
+  public static config(http: Polka, secret: string, transmitter: Transmitter): Webhook {
+    if (!Webhook.instance) {
+      Webhook.instance = new Webhook(http, secret, transmitter)
+    }
+    return Webhook.instance;
   }
   
   /**
@@ -73,13 +85,17 @@ export class Webhook implements IRouteProvider {
       return;
     }
 
-    // const event = new Event(ghEvent, req.body)
-    // const presenter = new Telegram();
-
-    res.writeHead(200).end("ok");
+    // Waiting is not easy! Reply back first, so Github knows we'he received it before waiting us handling the response
+    res.writeHead(200).end("OK");
+    
+    const event = Event.parse(ghEvent, req.body);
+    this._transmitter.push(MessageHandler(ghEvent, event.payload()))
   }
 
   public register() {
+    this._http.post("token", (req: Request, res: Response) => {
+      res.writeHead(200).end(this.signature(JSON.stringify(req.body)))
+    });
     this._http.post(this._route, this.authorize.bind(this), this.webhook.bind(this));
   }
   

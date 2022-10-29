@@ -3,21 +3,44 @@ import { UserFromGetMe } from "grammy/out/types.node";
 
 import { IService } from "../interfaces/service";
 
-type Message = string;
+type Target = string | number;
 
+
+/**
+ * The Singleton class defines the `config` method that lets clients access
+ * the unique singleton instance.
+ */
 export class Telegram implements IService {
-    private readonly _bot: Bot;
+    private static instance: Telegram;
 
-    constructor(token: string) {
+    private readonly _bot: Bot;
+    private readonly _target: Target;
+
+    private constructor(token: string, target: Target) {
         this._bot = new Bot(token)
+        this._target = target
     }
 
-    public async sendMessage(targetID: number, message: Message): Promise<import("@grammyjs/types/message.js").Message.TextMessage> {
-        return await this._bot.api.sendMessage( targetID, message, {
-            parse_mode: "HTML",
-            disable_web_page_preview: true,
-            protect_content: true
-        });
+    public static config(token: string, target: Target): Telegram {
+        if (!Telegram.instance) {
+            Telegram.instance = new Telegram(token, target);
+        }
+
+        return Telegram.instance;
+    }
+
+    public async sendMessage(message: string): Promise<boolean> {
+        try {
+            await this._bot.api.sendMessage( this._target, message, {
+                parse_mode: "HTML",
+                disable_web_page_preview: true,
+                protect_content: true
+            });
+            return Promise.resolve(true)
+        } catch(err) {
+            console.log(err)
+            return Promise.resolve(false)
+        }
     }
 
     public async info(): Promise<UserFromGetMe> {
