@@ -1,4 +1,4 @@
 export interface IService {
-    run(): void;
-    stop(): void;
+  run(): void;
+  stop(): void;
 }

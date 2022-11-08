@@ -1,9 +1,8 @@
-import * as dotenv from "dotenv"
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
-export const WEBHOOK_SECRET_TOKEN =
-  process.env.WEBHOOK_SECRET_TOKEN ?? "";
+export const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_SECRET_TOKEN ?? "";
 export const GITHUB_WEBHOOK_SECRET_TOKEN =
   process.env.GITHUB_WEBHOOK_SECRET_TOKEN || WEBHOOK_SECRET_TOKEN;
 export const PORT = process.env.PORT ?? 3000;

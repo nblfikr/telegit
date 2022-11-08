@@ -11,9 +11,9 @@ const config = {
   gh_secret_token: GITHUB_WEBHOOK_SECRET_TOKEN,
   bot_api_token: BOT_API_TOKEN,
   bot_target_id: BOT_TARGET_ID
-}
+};
 
-const server = new App(config)
+const server = new App(config);
 server.run();
 
 /**
